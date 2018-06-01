@@ -24,7 +24,11 @@ public class run {
 		norm_meas = kmeans.NormalizeMeasurements(meas);
 		
 		// Calculate the clusters with the normalized data
-		kmeans.CalcCluster(norm_meas, 4);
+		Table<String, String, String> centroids = TreeBasedTable.create();
+		centroids = kmeans.InitCentroids(norm_meas, 6);
+		
+		// Perform actual k means until treshold is reached
+		norm_meas = kmeans.PerformKMeans(norm_meas, centroids, 0.001);
 		
 //		System.out.println("Normalized measurements: " + norm_meas);
 		tabletocsv.write(norm_meas, "./csv/normalized_measurements.csv");
