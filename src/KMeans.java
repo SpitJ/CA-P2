@@ -1,6 +1,10 @@
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -9,6 +13,7 @@ import java.util.Map.Entry;
 
 import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
+import com.google.common.collect.Ordering;
 
 
 // class to create K means clusters
@@ -19,6 +24,7 @@ public class KMeans
 	
 	Table<String, String, String> norm_training_set;
 	Table<String, String, String> norm_centroids;
+	Table<String, String, String> training_set_cluster;
 	
 	// Normalizes input based on normalization table
 	public Table<String, String, String> Normalize(Table<String, String, String> input, Table<String, String, String> norm_factor)
@@ -147,22 +153,62 @@ public class KMeans
 	}
 	
 	// function to perform actual K means
-	public Table<String, String, String> PerformKNN(Table<String, String, String> norm_test_set, Table<String, String, String> norm_training_set, int amount_nearest_neighbors)
+	public Table<String, String, String> PerformKNN(Table<String, String, String> test_set, Table<String, String, String> norm_test_set, Table<String, String, String> norm_training_set, int amount_nearest_neighbors)
 	{ 
 		// calculate distance from each point in training set to test set
 		Table<String, String, String> training_to_test_set = TreeBasedTable.create();
 		training_to_test_set = CalcEuclyDist(norm_training_set, norm_test_set);
-		
+	
 		tabletocsv.write(training_to_test_set, "./csv/training_to_test_set.csv");
 		
-		return norm_test_set;
+		// calculate amount of each clusters in n nearest neighbours
+		// fill amount_centroid with 0 amount for each
+		Table<String, String, String> amount_centroid = TreeBasedTable.create();
+		for (String rowKey : norm_test_set.rowKeySet())
+		{
+			for (String cluster : norm_centroids.rowKeySet())
+			{
+				amount_centroid.put(rowKey, cluster, "0");
+			}
+		}
+		
+		for (String rowKey : norm_test_set.rowKeySet())
+		{
+			// analyze n nearest neighbors
+			Map<String, Double> sorted_by_dist = sortByComparator(training_to_test_set.column("dist_" + rowKey), true);
+			for(int i=0;i<amount_nearest_neighbors;i++) 
+			{
+				String neighbor = (new ArrayList<String>(sorted_by_dist.keySet())).get(i);
+				String cluster = training_set_cluster.get(neighbor, "cluster");
+				Integer amount = Integer.valueOf(amount_centroid.get(rowKey, cluster));
+				amount++;
+				amount_centroid.put(rowKey,  cluster, amount.toString());
+			}
+			
+			// assign each test object a cluster based on the max amount of cluster count of the nearest neighbors
+			Map<String, Double> sorted_by_cluster_amount = sortByComparator(amount_centroid.row(rowKey), false);
+			String cluster = (new ArrayList<String>(sorted_by_cluster_amount.keySet())).get(0);
+			test_set.put(rowKey, "cluster", cluster);
+		}
+		
+		
+		tabletocsv.write(amount_centroid, "./csv/amount_centroid.csv");
+		
+//		System.out.println(training_to_test_set.column("dist_1"));
+//		Map<String, Double> sortedMap = new HashMap();
+//		sortedMap = sortByComparator(training_to_test_set.column("dist_1"), true);
+//		System.out.println(sortedMap);
+		
+		
+		
+		return test_set;
 	}
 	
 	// Calculates new centroid position and returns treshold
 	private Double CalcNewCentroid()
 	{
 		// calculate euclydic distance of each measurement object to each centroid and store it
-		Table<String, String, String> training_set_cluster = TreeBasedTable.create();
+		training_set_cluster = TreeBasedTable.create();
 		training_set_cluster = CalcEuclyDist(norm_training_set, norm_centroids);
 		
 		// assign cluster to each measurement object
@@ -281,6 +327,47 @@ public class KMeans
 		return from_to;
 	}
 		
+	// helper function to sort a map by Double value, order=true means ascending order
+	private static Map<String, Double> sortByComparator(Map<String, String> unsortMap_String, final boolean order)
+    {
+		Map<String, Double> unsortMap = new HashMap() ;
+		for (Entry<String, String> entry : unsortMap_String.entrySet()) 
+		{
+		    String key = entry.getKey();
+		    Double value = Double.valueOf(entry.getValue());
+		    unsortMap.put(key, value);
+		}
+		
+        List<Entry<String, Double>> list = new LinkedList<Entry<String, Double>>(unsortMap.entrySet());
+
+        // Sorting the list based on values
+        Collections.sort(list, new Comparator<Entry<String, Double>>()
+        {
+            public int compare(Entry<String, Double> o1,
+                    Entry<String, Double> o2)
+            {
+                if (order)
+                {
+                    return o1.getValue().compareTo(o2.getValue());
+                }
+                else
+                {
+                    return o2.getValue().compareTo(o1.getValue());
+
+                }
+            }
+        });
+
+        // Maintaining insertion order with the help of LinkedList
+        Map<String, Double> sortedMap = new LinkedHashMap<String, Double>();
+        for (Entry<String, Double> entry : list)
+        {
+            sortedMap.put(entry.getKey(), entry.getValue());
+        }
+
+        return sortedMap;
+    }
+	
 	// helper function to obtain keys from a value
 	private static <T, E> Set<T> getKeysByValue(Map<T, E> map, E value) 
 	{
