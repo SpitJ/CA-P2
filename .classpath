@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/Users/Julian/Documents/GIT/CA-P2/res/mysql-connector-java-8.0.11.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Julian/Documents/GIT/CA-P2/res/guava-23.0.jar"/>
+	<classpathentry kind="lib" path="res/mysql-connector-java-8.0.11.jar"/>
+	<classpathentry kind="lib" path="res/guava-23.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
