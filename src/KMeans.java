@@ -19,7 +19,6 @@ public class KMeans
 	
 	Table<String, String, String> norm_training_set;
 	Table<String, String, String> norm_centroids;
-
 	
 	// Normalizes input based on normalization table
 	public Table<String, String, String> Normalize(Table<String, String, String> input, Table<String, String, String> norm_factor)
@@ -65,19 +64,19 @@ public class KMeans
 		return output;
 	}
 	
-	public Table<String, String, String> CalculateNormalizationFactors(Table<String, String, String> meas)
+	// returns table with normalization factors
+	public Table<String, String, String> CalculateNormalizationFactors(Table<String, String, String> training_set)
 	{
 		Table<String, String, String> norm_factor = TreeBasedTable.create();
 		// Calc AVG:
-
-		for (String columnKey : meas.columnKeySet())
+		for (String columnKey : training_set.columnKeySet())
 		{
 			// find average
 			Double avg = 0.0;
 			Double amount = 0.0;
-			for (String rowKey : meas.rowKeySet())
+			for (String rowKey : training_set.rowKeySet())
 			{
-				Double value = Double.parseDouble(meas.get(rowKey, columnKey));
+				Double value = Double.parseDouble(training_set.get(rowKey, columnKey));
 				avg = avg + value;
 				amount = amount + 1;
 			}
@@ -86,9 +85,10 @@ public class KMeans
 			
 			// find abs max in each column in normalized data
 			Double absmax = 0.0;
-			for (String rowKey : meas.rowKeySet())
+			for (String rowKey : training_set.rowKeySet())
 			{
-				Double value = Double.parseDouble(meas.get(rowKey, columnKey));
+				Double value = Double.parseDouble(training_set.get(rowKey, columnKey));
+				value = value - avg;
 				if (Math.abs(value) > absmax)
 				{
 					absmax = Math.abs(value);
@@ -125,6 +125,7 @@ public class KMeans
 		return init_centroids;
 	}
 	
+	// function to perform actual K means
 	public Table<String, String, String> PerformKMeans(Table<String, String, String> init_norm_meas, Table<String, String, String> init_centroids, Double treshold)
 	{ 
 		norm_training_set = init_norm_meas;
@@ -145,6 +146,7 @@ public class KMeans
 		return norm_centroids;
 	}
 	
+	// Calculates new centroid position and returns treshold
 	private Double CalcNewCentroid()
 	{
 		// calculate euclydic distance of each measurement object to each centroid and store it

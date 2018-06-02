@@ -12,7 +12,7 @@ import com.google.common.collect.Table;
 // Class to read from DB into Guava Table
 public class ReadFromDB 
 {
-	public Table<String, String, String> ReadDBinTable(String TableName, Table<String, String, String> measurements)
+	public Table<String, String, String> ReadDBinTable(String TableName, Table<String, String, String> input)
 	{
 		System.out.println("Try open DB and read table " + TableName);
 		try 
@@ -43,14 +43,14 @@ public class ReadFromDB
 				
 //				System.out.println(" r: " + row + " col: " + column + " val: " + value);
 				
-				measurements.put(row.toString(), column, value);
+				input.put(row.toString(), column, value);
 			}
 		}
 		catch (Throwable ignore) 
 		{
 			System.out.println("Error reading from DB: " + ignore.toString());
 		}
-		return measurements;
+		return input;
 	}
 
 }

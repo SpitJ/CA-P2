@@ -49,6 +49,8 @@ public class run {
 		Table<String, String, String> norm_test_set = TreeBasedTable.create();
 		norm_test_set = kmeans.Normalize(test_set, norm_factor);
 		tabletocsv.write(norm_test_set, "./csv/norm_test_set.csv");
+		
+		// 
 	}
 	
 
