@@ -50,6 +50,8 @@ public class run {
 		norm_test_set = kmeans.Normalize(test_set, norm_factor);
 		tabletocsv.write(norm_test_set, "./csv/norm_test_set.csv");
 		
+		norm_test_set = kmeans.PerformKNN(norm_test_set, norm_training_set, 4);
+		
 		// 
 	}
 	

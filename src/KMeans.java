@@ -109,26 +109,26 @@ public class KMeans
 	}
 	
 	// Create initial centroids based on amount
-	public Table<String, String, String> InitCentroids(Table<String, String, String> init_norm_meas, int amountCentroids)
+	public Table<String, String, String> InitCentroids(Table<String, String, String> init_norm_training_set, int amountCentroids)
 	{
 		Table<String, String, String> init_centroids = TreeBasedTable.create();
-		norm_training_set = init_norm_meas;
+		norm_training_set = init_norm_training_set;
 		// Convert rowKeys of normalized measurements to list (to index them)
-		List rowKeyList = new ArrayList(init_norm_meas.rowKeySet());
+		List rowKeyList = new ArrayList(init_norm_training_set.rowKeySet());
 		//create start centroids table
 		for(int i=0;i<amountCentroids;i++)
 		{
 			Map<String, String> row = new HashMap<String, String>();
-			row = init_norm_meas.row(rowKeyList.get(i).toString());
+			row = init_norm_training_set.row(rowKeyList.get(i).toString());
 			init_centroids.row(String.valueOf(i)).putAll(row);
 		}
 		return init_centroids;
 	}
 	
 	// function to perform actual K means
-	public Table<String, String, String> PerformKMeans(Table<String, String, String> init_norm_meas, Table<String, String, String> init_centroids, Double treshold)
+	public Table<String, String, String> PerformKMeans(Table<String, String, String> init_norm_training_set, Table<String, String, String> init_centroids, Double treshold)
 	{ 
-		norm_training_set = init_norm_meas;
+		norm_training_set = init_norm_training_set;
 		norm_centroids = init_centroids;
 		
 		// calculate new centroids until treshold reached
@@ -146,30 +146,25 @@ public class KMeans
 		return norm_centroids;
 	}
 	
+	// function to perform actual K means
+	public Table<String, String, String> PerformKNN(Table<String, String, String> norm_test_set, Table<String, String, String> norm_training_set, int amount_nearest_neighbors)
+	{ 
+		// calculate distance from each point in training set to test set
+		Table<String, String, String> training_to_test_set = TreeBasedTable.create();
+		training_to_test_set = CalcEuclyDist(norm_training_set, norm_test_set);
+		
+		tabletocsv.write(training_to_test_set, "./csv/training_to_test_set.csv");
+		
+		return norm_test_set;
+	}
+	
 	// Calculates new centroid position and returns treshold
 	private Double CalcNewCentroid()
 	{
 		// calculate euclydic distance of each measurement object to each centroid and store it
 		Table<String, String, String> training_set_cluster = TreeBasedTable.create();
-		for (String centroidRowKey : norm_centroids.rowKeySet())
-		{
-			for (String rowKey : norm_training_set.rowKeySet())
-			{
-				Double meas_val = 0.0;
-				Double centroid_val = 0.0;
-				Double dist = 0.0;
-				for (String columnKey : norm_training_set.columnKeySet())
-				{
-//					System.out.println("RowKey: " + rowKey + "ColumKey: " + columnKey);
-					meas_val = Double.parseDouble(norm_training_set.get(rowKey, columnKey));
-					centroid_val = Double.parseDouble(norm_centroids.get(centroidRowKey, columnKey));
-					dist += (centroid_val-meas_val)*(centroid_val-meas_val);	
-				}
-				dist = Math.sqrt(dist);
-				training_set_cluster.put(rowKey, "dist_" + centroidRowKey, dist.toString());
-			}
-		}
-
+		training_set_cluster = CalcEuclyDist(norm_training_set, norm_centroids);
+		
 		// assign cluster to each measurement object
 		for (String rowKey : norm_training_set.rowKeySet())
 		{
@@ -259,6 +254,33 @@ public class KMeans
 		return treshold;
 	}
 	
+	// calculates euclydian distance and returns it in a table
+	// rows: the objects which should be taken over as rows in the returned table
+	// columns: the objects which should be taken over as columns (dist_'objectname')
+	private Table<String, String, String> CalcEuclyDist(Table<String, String, String> rows, Table<String, String, String> columns)
+	{
+		Table<String, String, String> from_to = TreeBasedTable.create();
+		for (String toRowKey : columns.rowKeySet())
+		{
+			for (String rowKey : rows.rowKeySet())
+			{
+				Double meas_val = 0.0;
+				Double centroid_val = 0.0;
+				Double dist = 0.0;
+				for (String columnKey : norm_training_set.columnKeySet())
+				{
+//							System.out.println("RowKey: " + rowKey + "ColumKey: " + columnKey);
+					meas_val = Double.parseDouble(rows.get(rowKey, columnKey));
+					centroid_val = Double.parseDouble(columns.get(toRowKey, columnKey));
+					dist += (centroid_val-meas_val)*(centroid_val-meas_val);	
+				}
+				dist = Math.sqrt(dist);
+				from_to.put(rowKey, "dist_" + toRowKey, dist.toString());
+			}
+		}
+		return from_to;
+	}
+		
 	// helper function to obtain keys from a value
 	private static <T, E> Set<T> getKeysByValue(Map<T, E> map, E value) 
 	{
