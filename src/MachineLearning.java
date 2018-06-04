@@ -15,13 +15,13 @@ import com.google.common.collect.Table;
 import com.google.common.collect.TreeBasedTable;
 import com.google.common.collect.Ordering;
 
-
-// class to create K means clusters
-public class KMeans 
+// class to apply machine learning
+public class MachineLearning 
 {	
 	// for debug purposes
 	TableToCSV tabletocsv = new TableToCSV();
 	
+	// tables used to exchange information within functions
 	Table<String, String, String> norm_training_set;
 	Table<String, String, String> norm_centroids;
 	Table<String, String, String> training_set_cluster;
@@ -65,7 +65,10 @@ public class KMeans
 				value = value + avg;
 				output.put(rowKey, columnKey, value.toString());
 			}
+			// whitelist amount copy from non normalized
 		}
+		// copy also amount in return output
+		output.column("amount").putAll(input.column("amount"));
 		// return normalized input
 		return output;
 	}
@@ -188,19 +191,10 @@ public class KMeans
 			// assign each test object a cluster based on the max amount of cluster count of the nearest neighbors
 			Map<String, Double> sorted_by_cluster_amount = sortByComparator(amount_centroid.row(rowKey), false);
 			String cluster = (new ArrayList<String>(sorted_by_cluster_amount.keySet())).get(0);
+			// add cluster to test_set table
 			test_set.put(rowKey, "cluster", cluster);
 		}
-		
-		
 		tabletocsv.write(amount_centroid, "./csv/amount_centroid.csv");
-		
-//		System.out.println(training_to_test_set.column("dist_1"));
-//		Map<String, Double> sortedMap = new HashMap();
-//		sortedMap = sortByComparator(training_to_test_set.column("dist_1"), true);
-//		System.out.println(sortedMap);
-		
-		
-		
 		return test_set;
 	}
 	
