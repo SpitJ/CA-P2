@@ -21,7 +21,7 @@ public class run {
 		norm_training_set = machinelearning.Normalize(training_set, norm_factor);
 		tabletocsv.write(norm_training_set, "./csv/norm_training_set.csv");
 		
-		// Calculate the clusters with the normalized data
+		// Calculate the initial centroids 
 		Table<String, String, String> norm_centroids = TreeBasedTable.create();
 		norm_centroids = machinelearning.InitCentroids(norm_training_set, 4);
 		tabletocsv.write(norm_centroids, "./csv/norm_init_centroids.csv");
@@ -33,6 +33,10 @@ public class run {
 		Table<String, String, String> centroids = TreeBasedTable.create();
 		centroids = machinelearning.DeNormalize(norm_centroids, norm_factor);
 		tabletocsv.write(centroids, "./csv/centroids.csv");
+		
+		// link centroids to training set, calculate distances and store in csv
+		training_set = machinelearning.LinkTrainingSetCluster(training_set);
+		tabletocsv.write(training_set, "./csv/training_set.csv");
 				
 		//Read in Test Set for KNN
 		Table<String, String, String> test_set = TreeBasedTable.create();
@@ -47,5 +51,6 @@ public class run {
 		// perform KNN
 		test_set = machinelearning.PerformKNN(test_set,norm_test_set, norm_training_set, 4);
 		tabletocsv.write(test_set, "./csv/test_set.csv");
+		
 	}
 }

@@ -134,7 +134,7 @@ public class MachineLearning
 		return init_centroids;
 	}
 	
-	// function to perform actual K means
+	// function to perform Kmeans
 	public Table<String, String, String> PerformKMeans(Table<String, String, String> init_norm_training_set, Table<String, String, String> init_centroids, Double treshold)
 	{ 
 		norm_training_set = init_norm_training_set;
@@ -155,7 +155,17 @@ public class MachineLearning
 		return norm_centroids;
 	}
 	
-	// function to perform actual K means
+	// function to perform Kmeans
+	public Table<String, String, String> LinkTrainingSetCluster(Table<String, String, String> training_set)
+	{ 
+		// calculate new centroids until treshold reached
+		training_set.column("cluster").putAll(training_set_cluster.column("cluster"));
+		training_set.column("dist").putAll(training_set_cluster.column("mindist"));
+	
+		return training_set;
+	}
+	
+	// function to perform KNN
 	public Table<String, String, String> PerformKNN(Table<String, String, String> test_set, Table<String, String, String> norm_test_set, Table<String, String, String> norm_training_set, int amount_nearest_neighbors)
 	{ 
 		// calculate distance from each point in training set to test set
