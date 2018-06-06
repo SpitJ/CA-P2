@@ -158,11 +158,13 @@ public class MachineLearning
 	// function to perform Kmeans
 	public Table<String, String, String> LinkTrainingSetCluster(Table<String, String, String> training_set)
 	{ 
+		Table<String, String, String> output = TreeBasedTable.create();
+		output = training_set;
 		// calculate new centroids until treshold reached
-		training_set.column("cluster").putAll(training_set_cluster.column("cluster"));
-		training_set.column("dist").putAll(training_set_cluster.column("mindist"));
+		output.column("cluster").putAll(training_set_cluster.column("cluster"));
+		output.column("dist").putAll(training_set_cluster.column("mindist"));
 	
-		return training_set;
+		return output;
 	}
 	
 	// function to perform KNN

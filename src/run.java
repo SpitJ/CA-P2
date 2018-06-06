@@ -15,10 +15,11 @@ public class run {
 		
 		// Normalize the data: Calc Avg of one measurement & scale appropriate
 		Table<String, String, String> norm_training_set = TreeBasedTable.create();
+		norm_training_set.putAll(training_set);
 		Table<String, String, String> norm_factor = TreeBasedTable.create();
 		MachineLearning machinelearning = new MachineLearning();
-		norm_factor = machinelearning.CalculateNormalizationFactors(training_set);
-		norm_training_set = machinelearning.Normalize(training_set, norm_factor);
+		norm_factor = machinelearning.CalculateNormalizationFactors(norm_training_set);
+		norm_training_set = machinelearning.Normalize(norm_training_set, norm_factor);
 		tabletocsv.write(norm_training_set, "./csv/norm_training_set.csv");
 		
 		// Calculate the initial centroids 
