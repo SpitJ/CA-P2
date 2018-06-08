@@ -177,6 +177,7 @@ public class MachineLearning
 		tabletocsv.write(training_to_test_set, "./csv/training_to_test_set.csv");
 		
 		// calculate amount of each clusters in n nearest neighbours
+		
 		// fill amount_centroid with 0 amount for each
 		Table<String, String, String> amount_centroid = TreeBasedTable.create();
 		for (String rowKey : norm_test_set.rowKeySet())
@@ -217,7 +218,7 @@ public class MachineLearning
 		training_set_cluster = TreeBasedTable.create();
 		training_set_cluster = CalcEuclyDist(norm_training_set, norm_centroids);
 		
-		// assign cluster to each measurement object
+		// assign to each object a centroid
 		for (String rowKey : norm_training_set.rowKeySet())
 		{
 			Double mindist = Double.parseDouble(training_set_cluster.get(rowKey, "dist_0"));
@@ -262,7 +263,7 @@ public class MachineLearning
 			}
 		}
 		
-		// calculate error between current and new centroid position
+		// calculate distance between current and new centroid position for each centroid
 		for (String centroidRowKey : norm_centroids.rowKeySet())
 		{
 			Double old_val = 0.0;
@@ -278,7 +279,7 @@ public class MachineLearning
 			norm_centroids.put(centroidRowKey, "dist_to_new", dist.toString());
 		}
 		
-		// calculate distance to new centroid position for later return
+		// find maximum distance of the distance between current and newe centroind position for each centroid
 		Double treshold = 0.0;
 		for (String centroidRowKey : norm_centroids.rowKeySet())
 		{
@@ -289,7 +290,7 @@ public class MachineLearning
 			}
 		}
 		
-		// set new centroid 
+		// set new centroid position
 		for (String centroidRowKey : norm_centroids.rowKeySet())
 		{
 			String new_val = "";
